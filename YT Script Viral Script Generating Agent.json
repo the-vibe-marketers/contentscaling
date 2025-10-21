@@ -1,0 +1,1014 @@
+{
+  "name": "YT Script Viral Script Generating Agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        -16
+      ],
+      "id": "02f28371-0882-4c06-a082-7eb691a19a2e",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MZoy6b-OiD1MQOPUGfd21nYlwURbOxDdh2Cl3_7HS1A",
+          "mode": "list",
+          "cachedResultName": "YT video",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MZoy6b-OiD1MQOPUGfd21nYlwURbOxDdh2Cl3_7HS1A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 106461659,
+          "mode": "list",
+          "cachedResultName": "All",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MZoy6b-OiD1MQOPUGfd21nYlwURbOxDdh2Cl3_7HS1A/edit#gid=106461659"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "A"
+          ],
+          "schema": [
+            {
+              "id": "videoId",
+              "displayName": "videoId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "captions",
+              "displayName": "captions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "videoIndex",
+              "displayName": "videoIndex",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "views",
+              "displayName": "views",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "likes",
+              "displayName": "likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "comments",
+              "displayName": "comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1888,
+        32
+      ],
+      "id": "212479db-3c0e-47a5-8168-e6aeae8f6ae1",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q2cp9Pj98wDxvTr5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        2048,
+        432
+      ],
+      "id": "7d442125-45b0-4a7a-ab59-4cf824dd630b",
+      "name": "When chat message received",
+      "webhookId": "47a271f1-abcd-42d5-b168-93c823790377"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Hello there"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        2640,
+        304
+      ],
+      "id": "a35066fa-6d22-4bcc-8f92-808146496968",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2704,
+        592
+      ],
+      "id": "4e5d6f41-9cae-4747-9659-68bb5aa2b272",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Hi02E391flxREeCL",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MZoy6b-OiD1MQOPUGfd21nYlwURbOxDdh2Cl3_7HS1A",
+          "mode": "list",
+          "cachedResultName": "YT video",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MZoy6b-OiD1MQOPUGfd21nYlwURbOxDdh2Cl3_7HS1A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 329736585,
+          "mode": "list",
+          "cachedResultName": "Sheet10",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MZoy6b-OiD1MQOPUGfd21nYlwURbOxDdh2Cl3_7HS1A/edit#gid=329736585"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "videoId",
+              "displayName": "videoId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "videoIndex",
+              "displayName": "videoIndex",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "views",
+              "displayName": "views",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "likes",
+              "displayName": "likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "comments",
+              "displayName": "comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        752,
+        1040
+      ],
+      "id": "c10dde4d-8eb1-4105-9130-e7044a67a794",
+      "name": "Google Sheets3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q2cp9Pj98wDxvTr5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=PLvQWpZ46MVvgrRc6ubPQhdtpmnEVBbG8h&maxResults=50&key=API_key",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -304,
+        -16
+      ],
+      "id": "cafc2c42-8869-48d1-9f76-c06414df5333",
+      "name": "Youtube API + Creator/ topic videos to scrape"
+    },
+    {
+      "parameters": {
+        "content": "Step 1 - Scrape your fav creator videos (short/ long), videos on specific topics\n\nNote: I have used Google cloud console Youtube v3 API + playlist id (you can use channel id/ url parameters of search query) N8n does not have it by default",
+        "height": 200,
+        "width": 260,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -256
+      ],
+      "id": "a126f10c-bec4-403e-b945-e9a23fc13436",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Step 2 - Structure the extracted info with API\n\nNote: The API search won't get video count data Use chatgpt/ deepseek / perpelxity to get 'function code' to both structure the info from search like, title, video id, url and description first and then you can get the data with another node",
+        "height": 240,
+        "width": 260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -288
+      ],
+      "id": "b96a974d-2291-42a4-9bf2-f0c09ca54a52",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Step 3 - Get more data like view count, like count, comment count from video ids\n\nNote: when you have more than one video, suggest you to use chatgpt/ perplexity to check for how to add parameters to the base url",
+        "height": 200,
+        "width": 260,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        288
+      ],
+      "id": "dede8038-1182-4db9-ac45-a272fbd30ebf",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Step 4 - Turn unstructured data from the previous node using function node",
+        "height": 100,
+        "width": 260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        48,
+        640
+      ],
+      "id": "661cec53-75f5-4792-956f-1247948a571e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Step 5 - Merge data structure data from code 1 and 2 so that we can map the data to one place",
+        "height": 100,
+        "width": 260,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        464
+      ],
+      "id": "0fd97923-6819-4362-b833-f4faf997c28f",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items[0].json.items.slice(0, 15).map(item => {\n    return {\n        json: {\n            title: item.snippet.title,\n            videoId: item.snippet.resourceId.videoId,\n            url: \"https://www.youtube.com/watch?v=\" + item.snippet.resourceId.videoId,\n            description: item.snippet.description\n        }\n    };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -16
+      ],
+      "id": "bbc7328c-52d2-4b26-a0bf-d9dd8a030ac6",
+      "name": "Code 1 Structure the scraped info"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.items.map((item, index) => ({\n  videoIndex: index,  // Numbering each video from 0 to 14\n  videoId: item.id,\n  views: item.statistics.viewCount || \"0\",\n  likes: item.statistics.likeCount || \"0\",\n  comments: item.statistics.commentCount || \"0\"\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        784
+      ],
+      "id": "60204067-a364-4b5f-99e7-3ebbd1471b81",
+      "name": "Code 2 - Structure YT video number based data"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/videos?part=statistics&id=2aC2ly7vKtM,X-ilMpgqveo,pnvANzgHysg,SS7uc_Qfmks,FejyMVtXMk8,8h-cMblpI8I,4G1BxUxtwNI,XltZ66kcC8A,LWEPblgkj8E,KPxlRfTyC4c,oLhIGGYCCaw,P1-BZRNyBZ8,-PrBKGA4T7g,7GgIq8rkCVc&key=API KEY",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        528
+      ],
+      "id": "462e1878-93d8-4017-b343-e82da505cb5f",
+      "name": "Get view count, like count data"
+    },
+    {
+      "parameters": {
+        "content": "Step 6 - Map the merged data sets to one sheet in the excel",
+        "height": 80,
+        "width": 260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        768,
+        912
+      ],
+      "id": "99cec333-12bf-4a15-9758-8c20121e801a",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const urls = $input.all().map(row => row.json.url).filter(url => url); // Extract URLs & remove empty values\nreturn [{ urls }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "1af664b3-4ba2-46ae-9d41-0d4fe8e38344",
+      "name": "Code 3 - Filter only urls from the scraped YT video data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/karamelo~youtube-transcripts/run-sync-get-dataset-items?token=apify_api_API_KEY",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"urls\": [\n    \"https://www.youtube.com/watch?v=2aC2ly7vKtM\",\n    \"https://www.youtube.com/watch?v=X-ilMpgqveo\",\n    \"https://www.youtube.com/watch?v=pnvANzgHysg\",\n    \"https://www.youtube.com/watch?v=SS7uc_Qfmks\",\n    \"https://www.youtube.com/watch?v=FejyMVtXMk8\",\n    \"https://www.youtube.com/watch?v=8h-cMblpI8I\",\n    \"https://www.youtube.com/watch?v=4G1BxUxtwNI\",\n    \"https://www.youtube.com/watch?v=XltZ66kcC8A\",\n    \"https://www.youtube.com/watch?v=LWEPblgkj8E\",\n    \"https://www.youtube.com/watch?v=KPxlRfTyC4c\",\n    \"https://www.youtube.com/watch?v=oLhIGGYCCaw\",\n    \"https://www.youtube.com/watch?v=P1-BZRNyBZ8\",\n    \"https://www.youtube.com/watch?v=-PrBKGA4T7g\",\n    \"https://www.youtube.com/watch?v=7GgIq8rkCVc\"\n  ],\n  \"lang\": \"en\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        0
+      ],
+      "id": "21545173-5d8b-44ff-8d53-1c3f629125a8",
+      "name": "Transcribe video from url "
+    },
+    {
+      "parameters": {
+        "content": "Step 7 - In order for me to transcribe get the urls alone from previous node to pass on to the next node using function node",
+        "height": 100,
+        "width": 260,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -144
+      ],
+      "id": "1f9c36ae-0b92-4167-8225-93ca576d4e7c",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "Step 8 - Use any third party transcription tool api. Used Apify for transcribing url to transcript\n\nNote: Go to chatgpt/ perplexity to get json body to command urls you want to transcribe",
+        "width": 260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        -176
+      ],
+      "id": "65dcb87c-4c16-475a-bd08-e78fd8c83ea5",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "Step 9 - Combine merge 1 data sets + transcribed urls",
+        "height": 80,
+        "width": 260,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        528
+      ],
+      "id": "8fff63f8-d112-43c0-bab3-d1353e7a41f6",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        624,
+        592
+      ],
+      "id": "4a731abe-2277-473f-978e-c82a2f22c02e",
+      "name": "Merge 1 "
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1504,
+        352
+      ],
+      "id": "5c471a7d-eff8-480a-8517-caad43e49286",
+      "name": "Merge 2"
+    },
+    {
+      "parameters": {
+        "content": "Step 10 - Map the merged data sets from merge 1 and 2 to the excel",
+        "height": 80,
+        "width": 260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        208
+      ],
+      "id": "5167c93d-b9ee-4385-a7d8-0055853f6d44",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "Step 11 - Now that we have transcript of all the videos we can use chat model Open AI, Anthropic, Gemini, etc for the disired output\n\nDesired output - Identify hook, script structure and cta of videos with higer views, prompt to get similar script for your videos",
+        "height": 180,
+        "width": 440,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        624
+      ],
+      "id": "c5408829-d1a5-403d-9963-80687962296d",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "Step 12 - Every time a new prompt is added the outcome will be directly appended to the excel",
+        "height": 80,
+        "width": 260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3040,
+        512
+      ],
+      "id": "61737368-c043-4631-8d26-d8e9719f1245",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MZoy6b-OiD1MQOPUGfd21nYlwURbOxDdh2Cl3_7HS1A",
+          "mode": "list",
+          "cachedResultName": "YT video",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MZoy6b-OiD1MQOPUGfd21nYlwURbOxDdh2Cl3_7HS1A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1652658729,
+          "mode": "list",
+          "cachedResultName": "Sheet8",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MZoy6b-OiD1MQOPUGfd21nYlwURbOxDdh2Cl3_7HS1A/edit#gid=1652658729"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Script",
+              "displayName": "Script",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3120,
+        304
+      ],
+      "id": "d5f0c41b-6cc8-491c-ab94-6f67cb74ab5c",
+      "name": "Real time script gets added here",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q2cp9Pj98wDxvTr5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "1. In the same flow we can add multiple nodes from trigger (for example, multiple creators / topics so the database to create stunning script from the viral videos become easier)\n\n2. When you are testing make sure you don't test with long videos. It can cost you a lot on API and can slow down the testing process \n\n3. Make sure you have the logic mapped out in one place and keep looking to adjust so that the flow can be scaled and used for multiple instances\n\n4. Code help - You can ask AI in n8n/ chatgpt ",
+        "height": 260,
+        "width": 640,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        -224
+      ],
+      "id": "b6f2f865-30de-47dc-ba58-4a884c69a3c6",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "https://docs.google.com/document/d/1u7FprQbMiPxQO3JKFu6l1HmbWgYwgz4uaxRpQaKrI98/edit?usp=sharing",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.content }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        800
+      ],
+      "id": "59f298d8-d8c1-45af-b77f-133da6fa2490",
+      "name": "Google Docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "MnOe376AIBCXdkVD",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and merge JSON from Code Node output\nconst jsonData = $input.all().map(item => item.json);\n\n// Function to format structured text for Google Docs\nfunction formatContent(data) {\n    let content = `# AI agents YT transcript\\n\\n`;\n\n    data.forEach(section => {\n        content += `## ${section.section}\\n`;\n\n        // Loop through all keys except 'section'\n        Object.keys(section).forEach(key => {\n            if (key !== \"section\") {\n                if (Array.isArray(section[key])) {\n                    content += `- **${key.replace(/_/g, \" \")}**:\\n  - ` + section[key].join(\"\\n  - \") + `\\n\\n`;\n                } else {\n                    content += `- **${key.replace(/_/g, \" \")}**: ${section[key]}\\n\\n`;\n                }\n            }\n        });\n    });\n\n    return content.trim();\n}\n\n// Generate the formatted text output\nconst documentText = formatContent(jsonData);\n\n// Return structured text for Google Docs\nreturn [{\n    json: {\n        document_name: \"AI_agents_YT_ transcript\",\n        content: documentText // This ensures 'content' is always returned\n    }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        704
+      ],
+      "id": "8ad5d171-b2d6-4b70-a9a0-374e456b0220",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/karamelo~youtube-transcripts/run-sync-get-dataset-items?token=apify_api_(API KEY)",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"urls\": [\n    \"{{json.url}}\"\n  ],\n  \"lang\": \"en\"\n}\n",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -864,
+        704
+      ],
+      "id": "d02d307a-c161-4d9a-a506-a057fbef1e5a",
+      "name": "Transcribe video from url 1"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/search?part=snippet&q=heavy+metal+poisoning&maxResults=10&key=key",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -528,
+        -464
+      ],
+      "id": "fb03bad0-24e8-4d6a-89b6-aaf80d891a5a",
+      "name": "Youtube API + Creator/ topic videos to scrape1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const youtubeItems = $input.first().json.items;\n\nreturn youtubeItems.map(item => {\n    return {\n        json: {\n            title: item.snippet.title,\n            videoId: item.snippet.resourceId?.videoId || item.id?.videoId,\n            url: \"https://www.youtube.com/watch?v=\" + (item.snippet.resourceId?.videoId || item.id?.videoId),\n            description: item.snippet.description\n        }\n    };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        -464
+      ],
+      "id": "850b758b-d79a-4cc6-8f05-10fbfe9ab4dc",
+      "name": "Code1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Transcribe video from url 1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Youtube API + Creator/ topic videos to scrape",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Youtube API + Creator/ topic videos to scrape1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Real time script gets added here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets3": {
+      "main": [
+        [
+          {
+            "node": "Merge 2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Youtube API + Creator/ topic videos to scrape": {
+      "main": [
+        [
+          {
+            "node": "Code 1 Structure the scraped info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code 1 Structure the scraped info": {
+      "main": [
+        [
+          {
+            "node": "Get view count, like count data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge 1 ",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Code 3 - Filter only urls from the scraped YT video data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code 2 - Structure YT video number based data": {
+      "main": [
+        [
+          {
+            "node": "Merge 1 ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get view count, like count data": {
+      "main": [
+        [
+          {
+            "node": "Code 2 - Structure YT video number based data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code 3 - Filter only urls from the scraped YT video data": {
+      "main": [
+        [
+          {
+            "node": "Transcribe video from url ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe video from url ": {
+      "main": [
+        [
+          {
+            "node": "Merge 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge 1 ": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge 2": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Google Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe video from url 1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Youtube API + Creator/ topic videos to scrape1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d11746c2-ad85-426d-84e6-0791d5c7325f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "74f05c1cebd184a5d02e9c4c7deeeee0b4b4c089b73d63fe289d2b9014d64811"
+  },
+  "id": "Mo1t186mIM0NrXMc",
+  "tags": []
+}

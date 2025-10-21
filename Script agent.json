@@ -1,0 +1,162 @@
+{
+  "name": "Script agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -208,
+        -112
+      ],
+      "id": "b3d8c077-f4c4-4fe3-b433-7834f77cc360",
+      "name": "When chat message received",
+      "webhookId": "d4037523-97d0-4ec8-9aa9-6d7034dc96cb"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        128,
+        -240
+      ],
+      "id": "c939ec63-0aed-4930-9be7-8ebe3701e9a2",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        48
+      ],
+      "id": "43a88460-b4bd-40c8-934d-9c0c912ee8d6",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Hi02E391flxREeCL",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Step 1 - Now that we have transcript of all the videos we can use chat model Open AI, Anthropic, Gemini, etc for the disired output\n\nDesired output - Identify hook, script structure and cta of videos with higer views, prompt to get similar script for your videos",
+        "height": 180,
+        "width": 440,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        80
+      ],
+      "id": "5e08f74f-e49a-4d7a-84e1-b1c3f3954ec7",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "Step 2 - Every time a new prompt is added the outcome will be directly appended to the excel",
+        "height": 80,
+        "width": 260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -32
+      ],
+      "id": "3137999b-9383-4a0d-9c75-939909b9dc6f",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        608,
+        -240
+      ],
+      "id": "a63b4dec-6c7d-4a26-bb51-7530f7437a8c",
+      "name": "Real time script gets added here",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q2cp9Pj98wDxvTr5",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Real time script gets added here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bccf9e76-1365-4081-b67d-241b2dcdd230",
+  "meta": {
+    "instanceId": "74f05c1cebd184a5d02e9c4c7deeeee0b4b4c089b73d63fe289d2b9014d64811"
+  },
+  "id": "g21gr2PDG0zYDPgU",
+  "tags": []
+}
