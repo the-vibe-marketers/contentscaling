@@ -1,0 +1,157 @@
+{
+  "name": "My workflow 10",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}\n\nOutput has to be\n\nOnly 300 to 400 word output not too long",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        464,
+        240
+      ],
+      "id": "a26cce9e-6901-4973-b810-69138d099710",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-sonnet-4",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        512,
+        464
+      ],
+      "id": "8368c33f-1879-4ce0-8cb6-06b7e2d0c3cb",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "ivGoi3noYVsN6lRZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 640,
+        "width": 1200
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ba794ba0-7559-42d6-899d-0804a4f1eb77",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "user": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "message": "=Here is your content - {{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        240
+      ],
+      "id": "72235357-1541-4281-8917-de9907219d89",
+      "name": "Send message and wait for response",
+      "webhookId": "b09d3324-f063-4e7c-9f19-0456a4c74404",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "lGgOiNdiFA3KLAPz",
+          "name": "Slack community account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        256,
+        256
+      ],
+      "id": "af148279-abeb-483c-8ac9-b367ea4bafbd",
+      "name": "Slack Trigger1",
+      "webhookId": "5aaaaa3a-55e4-40d7-af16-b6a6148dab91",
+      "credentials": {
+        "slackApi": {
+          "id": "KKvcvTepcWueqFl1",
+          "name": "Slack feedback"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Trigger1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "05e185e7-4c2b-4d59-ad39-24a67b847849",
+  "meta": {
+    "instanceId": "74f05c1cebd184a5d02e9c4c7deeeee0b4b4c089b73d63fe289d2b9014d64811"
+  },
+  "id": "4o7aYfvRGHAhta2f",
+  "tags": []
+}
