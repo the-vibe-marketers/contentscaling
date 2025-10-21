@@ -1,5 +1,5 @@
 
-# 0) What this workflow does (at a glance)
+# What this workflow does (at a glance)
 
 * Listens to a Slack channel for a keyword → scrapes recent X/Twitter posts via Apify → filters >10k-follower profiles → fetches their latest posts → clusters tweets into themes with LLMs → writes themes to Google Sheets → summarizes top opportunities → sends a Slack summary. 
 
