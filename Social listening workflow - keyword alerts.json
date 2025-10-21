@@ -1,0 +1,1174 @@
+{
+  "name": "Social listening workflow - keyword alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const tweets = items.map(item => item.json);\n\nconst users = {};\n\nfor (const tweet of tweets) {\n  const username = tweet.author?.screen_name || tweet.user?.screen_name || \"unknown\";\n  const dateObj = new Date(tweet.created_at);\n  const date = dateObj.toISOString().split(\"T\")[0];\n  const dayOfWeek = dateObj.getUTCDay(); // 0 = Sunday\n  const hourOfDay = dateObj.getUTCHours(); // 0–23\n\n  if (!users[username]) {\n    users[username] = {\n      tweetCount: 0,\n      activeDays: new Set(),\n      weekdayCount: Array(7).fill(0),\n      hourCount: Array(24).fill(0),\n      stats: {\n        textOnly: 0,\n        image: 0,\n        video: 0,\n        gif: 0,\n        retweet: 0,\n        quote: 0,\n        threadStarter: 0\n      },\n      totalLikes: 0,\n      totalRetweets: 0\n    };\n  }\n\n  const user = users[username];\n  user.tweetCount++;\n  user.activeDays.add(date);\n  user.weekdayCount[dayOfWeek]++;\n  user.hourCount[hourOfDay]++;\n\n  // Engagement\n  user.totalLikes += tweet.favorite_count || 0;\n  user.totalRetweets += tweet.retweet_count || 0;\n\n  // Content type flags\n  if (tweet.is_retweet) {\n    user.stats.retweet++;\n    return;\n  }\n\n  if (tweet.is_quote_status) {\n    user.stats.quote++;\n  }\n\n  const media = tweet.media || {};\n  const hasImage = !!media.photo;\n  const hasVideo = !!media.video;\n  const hasGif = !!media.animated_gif;\n\n  if (hasImage) user.stats.image++;\n  else if (hasVideo) user.stats.video++;\n  else if (hasGif) user.stats.gif++;\n  else user.stats.textOnly++;\n\n  if (tweet.conversation_id === tweet.id) {\n    user.stats.threadStarter++;\n  }\n}\n\n// Helpers\nfunction getMaxIndex(arr) {\n  return arr.indexOf(Math.max(...arr));\n}\n\nconst weekdayNames = [\"Sunday\", \"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\", \"Saturday\"];\n\nconst result = [];\n\nfor (const username in users) {\n  const u = users[username];\n  const tweetCount = u.tweetCount;\n  const activeDays = u.activeDays.size;\n  const tweetsPerDay = tweetCount / activeDays;\n  const tweetsPerWeek = tweetsPerDay * 7;\n  const engagementRate = (u.totalLikes + u.totalRetweets) / tweetCount;\n\n  result.push({\n    json: {\n      username,\n      tweetCount,\n      avgTweetsPerDay: tweetsPerDay.toFixed(2),\n      avgTweetsPerWeek: tweetsPerWeek.toFixed(1),\n      activeDays,\n      mostActiveWeekday: weekdayNames[getMaxIndex(u.weekdayCount)],\n      mostActiveHourUTC: `${getMaxIndex(u.hourCount)}:00 - ${getMaxIndex(u.hourCount) + 1}:00 UTC`,\n      engagementRate: engagementRate.toFixed(2),\n      contentBreakdown: u.stats\n    }\n  });\n}\n\nreturn result;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        32
+      ],
+      "id": "2e78c2a0-588a-488b-80a5-64449557d9d0",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/danek~twitter-scraper-ppr/run-sync-get-dataset-items?token=apify_api_(YOUR_API KEY)",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"includeReplies\": false,\n    \"includeRetweets\": false,\n    \"max_posts\": 300,\n \"query\": \"{{ $json.message.text }}\",\n    \"search_type\": \"Latest\"\n}",
+        "options": {
+          "timeout": 250000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -128,
+        80
+      ],
+      "id": "b02632f4-53ea-422b-95e9-a2ead714b652",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5ad5e26d-3341-4bc6-9988-b8e01d457ac4",
+              "leftValue": "={{ $json.user_info.followers_count }}",
+              "rightValue": 10000,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        80
+      ],
+      "id": "e189e9bd-8bf0-4db1-8591-823fe9df34e9",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/danek~twitter-scraper-ppr/run-sync-get-dataset-items?token=apify_api_(YOUR API KEY)",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"max_posts\": 20,\n    \"search_type\": \"Latest\",\n    \"username\": \"{{ $json.name }}\"\n}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 3,
+              "batchInterval": 12000
+            }
+          },
+          "timeout": 250000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        304
+      ],
+      "id": "a363989e-0063-4fd5-a6b1-5c4033f75094",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here are tweets:\n\n{{ $json.chunk }}\n\nCluster them into meaningful themes.\n\nFor each theme, return:\n- A short **theme name**\n- The overall **sentiment** (positive / neutral / negative)\n- A **summary** of what users are saying\n\nYou may consider user bios and follower counts while identifying clusters and sentiment, but do **not include users** in the output.\n\n### Return JSON in this format:\n[\n  {\n    \"theme\": \"Gasless onboarding\",\n    \"sentiment\": \"positive\",\n    \"summary\": \"Users are excited about wallets that don't require ETH to start using. They see it as a major UX improvement for onboarding new users.\"\n  },\n  ...\n]\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1744,
+        432
+      ],
+      "id": "14f4a3ea-571b-429a-94bb-f5943cfa7dab",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1648,
+        672
+      ],
+      "id": "88898ac5-9632-4a57-82e1-e6a1005b98ad",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Hi02E391flxREeCL",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=here is the {{ $json.chunk }}\n\nYou are a social intelligence analyst. Below is a batch of tweets related to the keyword\n\nYour task:\n1. **Cluster the tweets** into as many clear and distinct themes as needed, based on what users are actually discussing.\n2. For each theme, return:\n   - A short, clear **theme name**\n   - The **overall sentiment** (positive / neutral / negative)\n   - A 2–3 sentence **summary** of what users are expressing (without starting with phrases like \"Users are saying\" or \"People are excited\")\n   - **Emerging opportunities** based on the discussion in that theme\n\nDo not include example tweets.\n\n---\n\n### Tweets:\n{{ $json.chunk }}\n\n---\n\n### Return JSON like:\n\n```json\n[\n  {\n    \"theme\": \"UX pain points\",\n    \"sentiment\": \"negative\",\n    \"summary\": \"Wallet onboarding remains clunky due to unclear gas fees and multiple approval screens. These friction points make the process intimidating for new users.\",\n    \"emerging_opportunities\": \"Build intuitive onboarding flows with gas abstraction and seamless approval bundling.\"\n  },\n  {\n    \"theme\": \"Cross-chain liquidity\",\n    \"sentiment\": \"positive\",\n    \"summary\": \"There is growing excitement about solutions enabling seamless asset movement across chains. Protocols tackling liquidity fragmentation are gaining traction.\",\n    \"emerging_opportunities\": \"Develop tools that optimize asset routing and bridge liquidity securely across ecosystems.\"\n  }\n]\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        864,
+        992
+      ],
+      "id": "21033a66-0f26-44cc-ab01-be0ba1c4dd52",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bc3d5e8a-cdee-41fd-a105-18df68f9be74",
+              "name": "tweet",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        992
+      ],
+      "id": "ecf23252-8bd0-48a6-a8b8-7a405cca3955",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and merge JSON from Code Node output\nconst jsonData = $input.all().map(item => item.json);\n\n// Function to format structured text for Google Docs\nfunction formatContent(data) {\n    let content = `# All text\\n\\n`;\n\n    data.forEach(section => {\n        content += `## ${section.section}\\n`;\n\n        // Loop through all keys except 'section'\n        Object.keys(section).forEach(key => {\n            if (key !== \"section\") {\n                if (Array.isArray(section[key])) {\n                    content += `- **${key.replace(/_/g, \" \")}**:\\n  - ` + section[key].join(\"\\n  - \") + `\\n\\n`;\n                } else {\n                    content += `- **${key.replace(/_/g, \" \")}**: ${section[key]}\\n\\n`;\n                }\n            }\n        });\n    });\n\n    return content.trim();\n}\n\n// Generate the formatted text output\nconst documentText = formatContent(jsonData);\n\n// Return structured text for Google Docs\nreturn [{\n    json: {\n        document_name: \"All_text\",\n        content: documentText // This ensures 'content' is always returned\n    }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        992
+      ],
+      "id": "38c6de9b-e734-4107-ad9a-8c35d8c52258",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        1232
+      ],
+      "id": "1cc1c3bd-45e4-444c-8104-b7c8b51e882e",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "Hi02E391flxREeCL",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const allThemes = [];\n\nfor (const item of items) {\n  let raw = item.json.output;\n  if (!raw || typeof raw !== \"string\") continue;\n\n  raw = raw.trim();\n  if (!raw.includes('\"theme\"') || !raw.includes('\"summary\"')) continue;\n\n  // Remove Markdown code block fencing\n  if (raw.startsWith(\"```json\")) raw = raw.slice(7).trim();\n  if (raw.endsWith(\"```\")) raw = raw.slice(0, -3).trim();\n\n  let parsed;\n  try {\n    parsed = JSON.parse(raw);\n    if (!Array.isArray(parsed)) continue;\n  } catch (err) {\n    console.warn(\"❌ Invalid JSON block:\", err.message);\n    continue;\n  }\n\n  parsed.forEach(t => {\n    allThemes.push({\n      json: {\n        theme: t.theme || \"\",\n        sentiment: t.sentiment || \"\",\n        summary: t.summary || \"\",\n        emerging_opportunities: t.emerging_opportunities || \"\"\n      }\n    });\n  });\n}\n\nreturn allThemes.length\n  ? allThemes\n  : [{ json: { message: \"⚠️ No valid themes parsed.\" } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        992
+      ],
+      "id": "c87d07b7-87ac-407c-8715-816ab18923e2",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e094d419-213b-4505-a31e-91edabf4fd22",
+              "name": "name",
+              "value": "={{ $json.user_info.screen_name }}",
+              "type": "string"
+            },
+            {
+              "id": "76733e70-0397-4ac0-a34a-7806a9e5d37c",
+              "name": "followers",
+              "value": "={{ $json.user_info.followers_count }}",
+              "type": "string"
+            },
+            {
+              "id": "eb3ced81-41a4-44e1-b242-ae5c9fffc89c",
+              "name": "bio",
+              "value": "={{ $json.user_info.description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        240
+      ],
+      "id": "9539db6e-6433-4c4e-822b-d114070195fb",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        864,
+        32
+      ],
+      "id": "22e99acb-53c5-44fd-a58c-bfc828ce7c1f",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bc3d5e8a-cdee-41fd-a105-18df68f9be74",
+              "name": "tweet",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "533dd1b3-4a91-4ac2-a8d3-c7f328407f7f",
+              "name": "user",
+              "value": "={{ $json.author.screen_name }}",
+              "type": "string"
+            },
+            {
+              "id": "17a0a835-b2d6-4ece-8530-f4aaf5c4f9b4",
+              "name": "follower count",
+              "value": "={{ $json.followers }}",
+              "type": "string"
+            },
+            {
+              "id": "50a4812c-67bd-4d80-af3a-3c3751fb37da",
+              "name": "bio",
+              "value": "={{ $json.bio }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        480
+      ],
+      "id": "995f88be-2005-4b23-a0f5-f51ba689f6ab",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $input.first().json.content;\nconst blocks = content.split(\"## undefined\"); // Split tweet sections\n\nconst parsedTweets = [];\n\nblocks.forEach((block, i) => {\n  const textMatch = block.match(/\\*\\*tweet\\*\\*:\\s([\\s\\S]*?)\\n- \\*\\*/);\n  const userMatch = block.match(/\\*\\*user\\*\\*:\\s([^\\n]*)/);\n  const followerMatch = block.match(/\\*\\*follower count\\*\\*:\\s([^\\n]*)/);\n  const bioMatch = block.match(/\\*\\*bio\\*\\*:\\s([\\s\\S]*?)(?=\\n- \\*\\*|$)/);\n\n  const text = textMatch?.[1]?.trim() || \"\";\n  const username = userMatch?.[1]?.trim() || \"unknown_user\";\n  const followers = parseInt(followerMatch?.[1]?.replace(/[^0-9]/g, \"\"), 10) || 0;\n  const bio = bioMatch?.[1]?.trim() || \"N/A\";\n\n  if (text) {\n    parsedTweets.push(`(${i + 1}) @${username} (${bio}, ${followers} followers): ${text}`);\n  }\n});\n\n// Now chunk into exactly 20\nconst totalChunks = 20;\nconst chunkSize = Math.ceil(parsedTweets.length / totalChunks);\nconst output = [];\n\nfor (let i = 0; i < parsedTweets.length; i += chunkSize) {\n  const chunk = parsedTweets.slice(i, i + chunkSize).join(\"\\n\");\n  output.push({ json: { chunk } });\n}\n\n// Pad to ensure 20 total chunks\nwhile (output.length < totalChunks) {\n  output.push({ json: { chunk: \"\" } });\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        432
+      ],
+      "id": "82e1405e-72ec-41b6-9cb5-590fb291eeb4",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and merge JSON from Code Node output\nconst jsonData = $input.all().map(item => item.json);\n\n// Function to format structured text for Google Docs\nfunction formatContent(data) {\n    let content = `# All text\\n\\n`;\n\n    data.forEach(section => {\n        content += `## ${section.section}\\n`;\n\n        // Loop through all keys except 'section'\n        Object.keys(section).forEach(key => {\n            if (key !== \"section\") {\n                if (Array.isArray(section[key])) {\n                    content += `- **${key.replace(/_/g, \" \")}**:\\n  - ` + section[key].join(\"\\n  - \") + `\\n\\n`;\n                } else {\n                    content += `- **${key.replace(/_/g, \" \")}**: ${section[key]}\\n\\n`;\n                }\n            }\n        });\n    });\n\n    return content.trim();\n}\n\n// Generate the formatted text output\nconst documentText = formatContent(jsonData);\n\n// Return structured text for Google Docs\nreturn [{\n    json: {\n        document_name: \"All_text\",\n        content: documentText // This ensures 'content' is always returned\n    }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        432
+      ],
+      "id": "20f3cc75-25e5-476b-be93-09cb3c8b7c68",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allThemes = [];\n\nfor (const item of items) {\n  let raw = item.json.output;\n  if (!raw || typeof raw !== \"string\") continue;\n\n  raw = raw.trim();\n  if (!raw.includes('\"theme\"') || !raw.includes('\"summary\"')) continue;\n\n  // Remove Markdown code block fencing\n  if (raw.startsWith(\"```json\")) raw = raw.slice(7).trim();\n  if (raw.endsWith(\"```\")) raw = raw.slice(0, -3).trim();\n\n  let parsed;\n  try {\n    parsed = JSON.parse(raw);\n    if (!Array.isArray(parsed)) continue;\n  } catch (err) {\n    console.warn(\"❌ Invalid JSON block:\", err.message);\n    continue;\n  }\n\n  parsed.forEach(t => {\n    allThemes.push({\n      json: {\n        theme: t.theme || \"\",\n        sentiment: t.sentiment || \"\",\n        summary: t.summary || \"\"\n      }\n    });\n  });\n}\n\nreturn allThemes.length\n  ? allThemes\n  : [{ json: { message: \"⚠️ No valid themes parsed.\" } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        432
+      ],
+      "id": "08e9f253-9e5f-4a47-adde-19e0ebf24461",
+      "name": "Code5"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        784,
+        624
+      ],
+      "id": "229d0c29-e5b2-4680-b21f-f276c460b6ee",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $input.first().json.content || \"\";\nconst rawBlocks = content.split(\"## undefined\");\n\n// Step 1: Parse tweets (skip empty blocks)\nconst tweets = rawBlocks.map(block => {\n  const tweetLine = block.match(/\\*\\*tweet\\*\\*:\\s*(.*)/s); // match everything after **tweet**:\n  if (!tweetLine) return null;\n\n  return tweetLine[1].trim();\n}).filter(Boolean); // remove nulls\n\n// Step 2: Chunk into ~20 equal chunks\nconst chunks = [];\nconst chunkSize = Math.ceil(tweets.length / 20);\n\nfor (let i = 0; i < tweets.length; i += chunkSize) {\n  const tweetChunk = tweets.slice(i, i + chunkSize).join(\"\\n\\n\");\n  chunks.push({ json: { chunk: tweetChunk } });\n}\n\nreturn chunks;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        992
+      ],
+      "id": "e761c05c-dc0c-4e0a-95f0-cbd8e3d8480a",
+      "name": "Code6"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1559775025,
+          "mode": "list",
+          "cachedResultName": "General theme around keyword",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12fe5tDRbPlDyGLlG5_Mf7MoOCJju0YxIywBzTMmomVk/edit#gid=1559775025"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Theme ": "={{ $json.theme }}",
+            "Sentiment": "={{ $json.sentiment }}",
+            "summary": "={{ $json.summary }}",
+            "Emerging opportunities": "={{ $json.emerging_opportunities }}"
+          },
+          "matchingColumns": [
+            "Theme "
+          ],
+          "schema": [
+            {
+              "id": "Theme ",
+              "displayName": "Theme ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Emerging opportunities",
+              "displayName": "Emerging opportunities",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1472,
+        992
+      ],
+      "id": "98a1d1a1-c589-45e6-8c89-b9555769fd0d",
+      "name": "Google Sheets2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pKM6FdbNheQAw8bc",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1492699236,
+          "mode": "list",
+          "cachedResultName": "Profiles with > 10k followers for the keyword",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12fe5tDRbPlDyGLlG5_Mf7MoOCJju0YxIywBzTMmomVk/edit#gid=1492699236"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name ": "={{ $json.name }}",
+            "follower ": "={{ $json.followers }}",
+            "bio": "={{ $json.bio }}"
+          },
+          "matchingColumns": [
+            "Name "
+          ],
+          "schema": [
+            {
+              "id": "Name ",
+              "displayName": "Name ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "follower ",
+              "displayName": "follower ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bio",
+              "displayName": "bio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        624,
+        -128
+      ],
+      "id": "fa32f0c3-3e0b-45ff-bbdd-cd621399e752",
+      "name": "Google Sheets4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pKM6FdbNheQAw8bc",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Profiles > 10k followers discuss ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12fe5tDRbPlDyGLlG5_Mf7MoOCJju0YxIywBzTMmomVk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Theme ": "={{ $json.theme }}",
+            "Sentiment": "={{ $json.sentiment }}",
+            "summary": "={{ $json.summary }}"
+          },
+          "matchingColumns": [
+            "Theme "
+          ],
+          "schema": [
+            {
+              "id": "Theme ",
+              "displayName": "Theme ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2384,
+        432
+      ],
+      "id": "e694ca09-8f1e-4fd5-86f2-582cbe94a8ef",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pKM6FdbNheQAw8bc",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and merge JSON from Code Node output\nconst jsonData = $input.all().map(item => item.json);\n\n// Function to format structured text for Google Docs\nfunction formatContent(data) {\n    let content = `# All text\\n\\n`;\n\n    data.forEach(section => {\n        content += `## ${section.section}\\n`;\n\n        // Loop through all keys except 'section'\n        Object.keys(section).forEach(key => {\n            if (key !== \"section\") {\n                if (Array.isArray(section[key])) {\n                    content += `- **${key.replace(/_/g, \" \")}**:\\n  - ` + section[key].join(\"\\n  - \") + `\\n\\n`;\n                } else {\n                    content += `- **${key.replace(/_/g, \" \")}**: ${section[key]}\\n\\n`;\n                }\n            }\n        });\n    });\n\n    return content.trim();\n}\n\n// Generate the formatted text output\nconst documentText = formatContent(jsonData);\n\n// Return structured text for Google Docs\nreturn [{\n    json: {\n        document_name: \"All_text\",\n        content: documentText // This ensures 'content' is always returned\n    }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        992
+      ],
+      "id": "c26f5fa8-23d4-418f-9706-f053b9c1ae11",
+      "name": "Code7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Based on {{ $json.content }}\n\n✳️ Your task:\nFrom the given themes and opportunities, identify the top 5 opportunities and topics I should focus on for content today, based on:\n\nTimeliness / news relevance\n\nHigh community interest or conversation volume\n\nPotential for education, conversion, or community growth\n\nNovelty or missed narratives\n\n📦 For each selected theme, return:\nTheme name\n\nWhy this is important today – explain in 2–3 lines\n\nSuggested research points – 3–5 key facts, stats, links, angles to explore in content\n(e.g., protocol names, new metrics, investor sentiment, major upcoming events)\n\nContent potential\n\nWhat type of content this works best for (e.g. X thread, newsletter deep-dive, short video, community meme)\n\nA content angle or hook (1 sentence)\n\nMake it like 200 words only overall ",
+        "options": {
+          "systemMessage": "You're a (INDUSTRY) trend strategist and creator working with a connected intelligence system that has already clustered hundreds of tweets into themes.\n\nyou have access to:\n\nEach cluster contains: theme, sentiment, summary, and emerging opportunities"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1968,
+        992
+      ],
+      "id": "86e7ae9b-bebd-4dca-8d4c-4a69db2fb6d9",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": "perplexity/sonar-reasoning",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        1200
+      ],
+      "id": "4ba81bfb-8dea-4056-824d-dedaab8def5f",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "ivGoi3noYVsN6lRZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}\n\nOutput has to be\n\nOnly 300 to 400 word output not too long",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        0,
+        -640
+      ],
+      "id": "5ff63a18-5c69-43d9-af11-7f6825f50488",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-sonnet-4",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -416
+      ],
+      "id": "c27680bb-38c2-4c26-9b2a-8525c758da8b",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "ivGoi3noYVsN6lRZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 640,
+        "width": 1200
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        -880
+      ],
+      "id": "8f46ca14-4788-4d85-b61f-0165891476b0",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 1620,
+        "width": 3500,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -160
+      ],
+      "id": "f0d35862-3a4e-470f-a6a1-efb8dcd2f2ae",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        80
+      ],
+      "id": "3cdf2ce6-e7c9-465a-b688-c0417624e4fc",
+      "name": "Slack Trigger",
+      "webhookId": "db735a8d-5019-4dfe-9f87-8c72c78e5e03",
+      "credentials": {
+        "slackApi": {
+          "id": "KKvcvTepcWueqFl1",
+          "name": "Slack feedback"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "text": "=Here is the summary of key trends\n\n{{ $json.output }}\n\nChat here to create content - t.me/vibe_marketing_co_bot",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2320,
+        992
+      ],
+      "id": "cbca1daa-6c92-4203-8b60-80665103cc85",
+      "name": "Send a message",
+      "webhookId": "a8fe16b0-a4eb-45da-a552-14760d9396a9",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "lGgOiNdiFA3KLAPz",
+          "name": "Slack community account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -640
+      ],
+      "id": "a6a020d4-4b67-4ae5-b5de-29879be06c6e",
+      "name": "Slack Trigger1",
+      "webhookId": "83c88a0b-d591-44c5-9a5a-eb07e1924e73",
+      "credentials": {
+        "slackApi": {
+          "id": "KKvcvTepcWueqFl1",
+          "name": "Slack feedback"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "user": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "message": "=Here is your content - {{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        352,
+        -640
+      ],
+      "id": "197c3191-7b3c-4ade-a027-a90f8cd58a52",
+      "name": "Send message and wait for response",
+      "webhookId": "b09d3324-f063-4e7c-9f19-0456a4c74404",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "lGgOiNdiFA3KLAPz",
+          "name": "Slack community account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Google Sheets4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets2": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Trigger1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "231d178b-4fff-4324-81c1-c6fbcdd22987",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "74f05c1cebd184a5d02e9c4c7deeeee0b4b4c089b73d63fe289d2b9014d64811"
+  },
+  "id": "4B7jeX9knUIyUYqz",
+  "tags": []
+}
